@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Startup Profit Prediction</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #dbeafe, #eff6ff);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            padding: 35px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #1d4ed8;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1e293b;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            font-size: 15px;
+            background: white;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #2563eb;
+        }
+
+        .predict-btn {
+            width: 100%;
+            padding: 14px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .predict-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 22px;
+            text-align: center;
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            border-radius: 10px;
+        }
+
+        .result h2 {
+            color: #166534;
+            font-size: 19px;
+            margin-bottom: 12px;
+        }
+
+        .profit {
+            color: #15803d;
+            font-size: 28px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 15px;
+            color: #991b1b;
+            background: #fee2e2;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .profit {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <h1>Profit Prediction</h1>
+
+            <p>
+                Enter startup investment details to predict
+                the expected profit using Machine Learning.
+            </p>
+        </div>
+
+        <form action="{{ url_for('predict') }}" method="POST">
+
+            <!-- R&D Spend -->
+            <div class="form-group">
+                <label for="rd_spend">R&D Spend</label>
+
+                <input
+                    type="number"
+                    id="rd_spend"
+                    name="rd_spend"
+                    placeholder="Enter R&D Spend"
+                    min="0"
+                    step="any"
+                    value="{{ request.form.get('rd_spend', '') }}"
+                    required
+                >
+            </div>
+
+            <!-- Administration -->
+            <div class="form-group">
+                <label for="administration">Administration</label>
+
+                <input
+                    type="number"
+                    id="administration"
+                    name="administration"
+                    placeholder="Enter Administration Cost"
+                    min="0"
+                    step="any"
+                    value="{{ request.form.get('administration', '') }}"
+                    required
+                >
+            </div>
+
+            <!-- Marketing Spend -->
+            <div class="form-group">
+                <label for="marketing_spend">Marketing Spend</label>
+
+                <input
+                    type="number"
+                    id="marketing_spend"
+                    name="marketing_spend"
+                    placeholder="Enter Marketing Spend"
+                    min="0"
+                    step="any"
+                    value="{{ request.form.get('marketing_spend', '') }}"
+                    required
+                >
+            </div>
+
+            <!-- State -->
+            <div class="form-group">
+                <label for="state">State</label>
+
+                <select id="state" name="state" required>
+
+                    <option value="" disabled
+                        {% if not request.form.get('state') %}selected{% endif %}>
+                        Select a State
+                    </option>
+
+                    <option value="0"
+                        {% if request.form.get('state') == '0' %}selected{% endif %}>
+                        New York (0)
+                    </option>
+
+                    <option value="1"
+                        {% if request.form.get('state') == '1' %}selected{% endif %}>
+                        California (1)
+                    </option>
+
+                    <option value="2"
+                        {% if request.form.get('state') == '2' %}selected{% endif %}>
+                        Florida (2)
+                    </option>
+
+                </select>
+            </div>
+
+            <!-- Predict Button -->
+            <button type="submit" class="predict-btn">
+                Predict Profit
+            </button>
+
+        </form>
+
+        <!-- Prediction Result -->
+        {% if prediction_text is not none %}
+            <div class="result">
+
+                <h2>Predicted Profit</h2>
+
+                <div class="profit">
+                    ${{ "{:,.2f}".format(prediction_text) }}
+                </div>
+
+            </div>
+        {% endif %}
+
+        <!-- Error Message -->
+        {% if error_message %}
+            <div class="error">
+                {{ error_message }}
+            </div>
+        {% endif %}
+
+        <div class="footer">
+            Powered by Python, Flask & Machine Learning
+        </div>
+
+    </div>
+
+</body>
+</html>
+
